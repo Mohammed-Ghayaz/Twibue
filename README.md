@@ -42,4 +42,5 @@ twibue-backend/
 
 # 🙋‍♂️ Author
 Developed by Z Mohammed Ghayaz
+
 🔗 [LinkedIn](https://www.linkedin.com/in/mohammed-ghayaz/) • 🐙 [GitHub](https://github.com/Mohammed-Ghayaz)
