@@ -28,18 +28,6 @@ Twibue is the backend API for a concept project that merges key features of YouT
 
 ---
 
-## 📂 Project Structure
-
-twibue-backend/
-├── controllers/
-├── models/
-├── routes/
-├── middleware/
-├── public/temp/ # Temporary storage for uploaded files
-├── .env
-├── server.js
-└── package.json
-
 # 🙋‍♂️ Author
 Developed by Z Mohammed Ghayaz
 
