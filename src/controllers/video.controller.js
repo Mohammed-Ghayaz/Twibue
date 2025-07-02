@@ -9,7 +9,6 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query = "", sortBy = "createdAt", sortType = "desc", userId } = req.query
     
-    // Build match object
     const match = {};
     if (query) {
         match.title = { $regex: query, $options: "i" };
@@ -18,7 +17,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
         match.owner = mongoose.Types.ObjectId(userId);
     }
 
-    // Build sort object
     const sort = {};
     sort[sortBy] = sortType === "asc" ? 1 : -1;
 
@@ -131,9 +129,11 @@ const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: delete video
 
-    const video = await Video.findByIdAndDelete({
-            _id: videoId,
-        })
+    const video = await Video.findByIdAndDelete(videoId)
+
+    if(!video){
+        throw new ApiError(400, "Video not found")
+    }
     
     return res.status(200).json(new ApiResponse(200, video, "Video deleted successfully"))
 })
