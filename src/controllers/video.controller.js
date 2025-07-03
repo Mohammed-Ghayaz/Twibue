@@ -14,6 +14,14 @@ const getAllVideos = asyncHandler(async (req, res) => {
         match.title = { $regex: query, $options: "i" };
     }
     if (userId) {
+        const isValidId = isValidObjectId(userId);
+        if(!isValidId){
+            throw new ApiError(400, "Invalid User ID")
+        }
+        const user = await User.findById(userId);
+        if(!user){
+            throw new ApiError(404, "User does not exists")
+        }
         match.owner = mongoose.Types.ObjectId(userId);
     }
 
@@ -63,7 +71,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
         title,
         description,
         duration: videoFile.duration,
-        owner: req.user
+        owner: req.user._id
     })
 
     const createdVideo = await Video.findById(video._id)
@@ -72,12 +80,19 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Error while registering the video")
     }
 
-    return res.status(200).json(new ApiResponse(200, video, "Video Uploaded successfully"))
+    return res.status(200).json(new ApiResponse(200, createdVideo, "Video Uploaded successfully"))
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: get video by id
+
+    const isValidVideoId = isValidObjectId(videoId)
+
+    if(!isValidVideoId){
+        throw new ApiError(400, "Invalid Video ID")
+    }
+
     const video = await Video.findById(videoId)
 
     if(!video) {
@@ -90,9 +105,20 @@ const getVideoById = asyncHandler(async (req, res) => {
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
+  const isValidVideoId = isValidObjectId(videoId)
+
+  if(!isValidVideoId){
+    throw new ApiError(400, "Invalid Video ID")
+  }
+
   const video = await Video.findById(videoId);
   if (!video) {
     throw new ApiError(404, "Video not found");
+  }
+
+  // Authorization: Only owner can update
+  if(video.owner.toString() !== req.user._id.toString()){
+    throw new ApiError(403, "You are not authorized to update this video")
   }
 
   const { title, description } = req.body;
@@ -129,11 +155,24 @@ const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: delete video
 
-    const video = await Video.findByIdAndDelete(videoId)
+    const isValidVideoId = isValidObjectId(videoId)
+
+    if(!isValidVideoId){
+        throw new ApiError(400, "Invalid Video ID")
+    }
+
+    const video = await Video.findById(videoId)
 
     if(!video){
         throw new ApiError(400, "Video not found")
     }
+
+    // Authorization: Only owner can delete
+    if(video.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(403, "You are not authorized to delete this video")
+    }
+
+    await Video.findByIdAndDelete(videoId)
     
     return res.status(200).json(new ApiResponse(200, video, "Video deleted successfully"))
 })
@@ -141,10 +180,20 @@ const deleteVideo = asyncHandler(async (req, res) => {
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
 
+    const isValidVideoId = isValidObjectId(videoId)
+
+    if(!isValidVideoId){
+        throw new ApiError(400, "Invalid Video ID")
+    }
+
     const video = await Video.findById(videoId)
 
     if(!video) {
         throw new ApiError(404, "Video not found")
+    }
+
+    if (video.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to change publish status");
     }
 
     const updatePublishStatus = await Video.findByIdAndUpdate(

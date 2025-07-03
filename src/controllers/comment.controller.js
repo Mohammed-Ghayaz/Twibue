@@ -35,7 +35,7 @@ const addComment = asyncHandler(async (req, res) => {
 
     const comment = await Comment.create({
         videoId: mongoose.Types.ObjectId(videoId),
-        userId: req.user._id,
+        owner: req.user._id,
         content
     })
 
@@ -57,6 +57,11 @@ const updateComment = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Comment not found")
     }
 
+    // Authorization: Only owner can update
+    if(comment.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(403, "You are not authorized to update this comment")
+    }
+
     const updatedComment = await Comment.findByIdAndUpdate(
         commentId,
         { content },
@@ -73,9 +78,18 @@ const updateComment = asyncHandler(async (req, res) => {
 const deleteComment = asyncHandler(async (req, res) => {
     const {commentId} = req.params
 
-    const comment = await Comment.deleteOne({
-        _id: commentId,
-    })
+    const comment = await Comment.findById(commentId)
+
+    if (!comment) {
+        throw new ApiError(404, "Comment not found")
+    }
+
+    // Authorization: Only owner can delete
+    if(comment.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(403, "You are not authorized to delete this comment")
+    }
+
+    await Comment.deleteOne({ _id: commentId })
 
     return res.status(200).json(new ApiResponse(200, comment, "Comment deleted successfully"))
 })
