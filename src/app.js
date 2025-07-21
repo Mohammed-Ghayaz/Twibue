@@ -1,6 +1,11 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import xss from "xss-clean"
+import rateLimit from "express-rate-limit";
+import expressMongoSanitize from "express-mongo-sanitize";
+
 
 const app = express();
 
@@ -13,6 +18,14 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use(cookieParser());
+app.use(helmet());
+
+// Limit repeated requests
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+
+// Sanitize request data
+app.use(xss());
+app.use(expressMongoSanitize());
 
 
 import userRouter from "./routes/user.routes.js";

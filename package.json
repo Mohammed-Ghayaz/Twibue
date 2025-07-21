@@ -22,10 +22,14 @@
     "datetime": "^0.0.3",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.0.1",
     "form-data": "^4.0.3",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.0",
     "mongoose-aggregate-paginate-v2": "^1.1.4",
-    "multer": "^1.4.5-lts.2"
+    "multer": "^1.4.5-lts.2",
+    "xss-clean": "^0.1.4"
   }
 }
